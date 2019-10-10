@@ -38,5 +38,8 @@
     "webpack-dev-server": "^3.2.1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "vant": "^2.2.6"
+  }
 }

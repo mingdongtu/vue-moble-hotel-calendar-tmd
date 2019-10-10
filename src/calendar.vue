@@ -62,6 +62,9 @@
 <script type="ecmascript-6">
 import { dateFtt } from "./date";
 import utils from "./utils.js";
+import { Toast } from "vant";
+import Vue from "vue";
+Vue.use(Toast);
 export default {
   data() {
     return {
@@ -75,7 +78,11 @@ export default {
       endDate: null,
       fixMonth: null,
       dayGap: 1,
-      today: new Date()
+      today: new Date(),
+      multipleDate: {
+        startDate: "",
+        endDate: ""
+      }
     };
   },
   props: {
@@ -97,12 +104,15 @@ export default {
       default: false
     }
   },
+
   computed: {
     chooseTime: {
       get() {
-        return this.utils.dealDate(this.today);
+        if (this.isMultiple) return this.multipleDate;
+        if (!this.isMultiple) return this.utils.dealDate(this.today);
       },
       set(val) {
+        console.log("给choostime赋值", val);
         this.today = val;
       }
     },
@@ -114,6 +124,12 @@ export default {
     }
   },
   mounted() {
+    //一天的毫秒数
+    const oneDayTime = 24 * 60 * 60 * 1000;
+    this.multipleDate.startDate = this.utils.dealDate(new Date());
+    this.multipleDate.endDate = this.utils.dealDate(
+      new Date().getTime() + oneDayTime
+    );
     this.screenHeight = window.screen.height;
     this.date = new Date();
     this.startDate = this.date;
@@ -127,6 +143,14 @@ export default {
   },
   methods: {
     onConfirm() {
+      //若是双选，判断是否选了结束时间
+      if (this.isMultiple && !this.endDate) {
+        Toast({
+          message: "请选择结束时间",
+          duration: 1000
+        });
+        return;
+      }
       this.$emit("confirm", this.chooseTime);
 
       this.hideDate();
@@ -199,17 +223,17 @@ export default {
           this.startDate.getTime() ||
         (this.startDate && this.endDate)
       ) {
+        this.startDate = new Date(`${month.month}/${day.num}`);
+        this._clearStatus();
+        this.endDate = null;
+        this._setStatus(month, day, this.startText);
+        this.$emit("setStartDate", this.startDate);
         console.log(
           "第二种情况",
           `${month.month}/${day.num}`,
           this.startDate,
           this.endDate
         );
-        this.startDate = new Date(`${month.month}/${day.num}`);
-        this._clearStatus();
-        this.endDate = null;
-        this._setStatus(month, day, this.startText);
-        this.$emit("setStartDate", this.startDate);
       } else if (
         //存在开始时间，不存结束时间，且选中时间不等于开始时间
         this.startDate &&
@@ -217,16 +241,16 @@ export default {
         this.startDate.getTime() !==
           new Date(`${month.month}/${day.num}`).getTime()
       ) {
+        this.endDate = new Date(`${month.month}/${day.num}`);
+        // this._clearStatus();
+        this._setStatus(month, day, this.endText);
+        this.$emit("setEndDate", this.endDate);
         console.log(
           "第三种情况",
           `${month.month}/${day.num}`,
           this.startDate,
           this.endDate
         );
-        this.endDate = new Date(`${month.month}/${day.num}`);
-        this._clearStatus();
-        this._setStatus(month, day, this.endText);
-        this.$emit("setEndDate", this.endDate);
         this.dayGap =
           (this.endDate.getTime() - this.startDate.getTime()) /
             1000 /
@@ -234,18 +258,20 @@ export default {
             24 +
           "";
       }
+
+      this.multipleDate = {
+        startDate: this.utils.dealDate(this.startDate),
+        endDate: this.endDate ? this.utils.dealDate(this.endDate) : null
+      };
       this.$emit("change", this.startDate, this.endDate, this.dayGap);
     },
-    // getSelectedDate(date) {
-    //   return dateFtt('MM月dd日', date)
-    // },
-    // 日期格式化
+
     getDateFormat(date) {
       return dateFtt("yyyy年MM月", new Date(date + "/1"));
     },
     editDate() {
       this.show = true;
-      this.zIndex = 9;
+      this.zIndex = 10000;
       this.$nextTick(() => {
         this._getCalHeight();
         this.bindScroll();
@@ -548,7 +574,7 @@ export default {
       line-height: 35px;
       font-size: 14px;
       position: relative;
-      z-index: 9;
+      z-index: 10000;
       background-color: #fff;
 
       .close-icon {
@@ -567,7 +593,7 @@ export default {
     .cm-days {
       height: 30px;
       flex(row, center, space-around);
-      z-index: 9;
+      z-index: 10000;
       position: relative;
       background-color: #fff;
 
