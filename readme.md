@@ -37,6 +37,7 @@ endText | 结束日期的描述 | String | - | 退房
 ## 事件
 事件名 | 说明 |  参数  
 :-: | :-: | :-:
+confirm | 点击确定触发 | (chooseDate) |
 change | 触发日期选中的回调 | (startDate, endDate, dayGap) |
 setStartDate | 选中开始日期的回调 | (startDate)
 setEndDate | 选中结束日期的回调 | (endDate)

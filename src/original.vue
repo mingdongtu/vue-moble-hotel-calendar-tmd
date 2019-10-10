@@ -23,9 +23,9 @@
         <div class="cal-wrapper" v-if="show" :style="wrapperStyle">
           <div class="cal-mask" @click="hideDate"></div>
           <div class="cal-main" :style="mainStyle">
-            <div class="cm-header">
+            <div class="cm-header" @click="hideDate">
               选择日期
-              <div class="close-icon"><span class="iconfont iconfont_1" @click.stop='onConfirm'>确定</span></div>
+              <div class="close-icon"><span class="iconfont">&#xe60f;</span></div>
             </div>
             <div class="cm-days">
               <div class="cm-days-item holiday">日</div>
@@ -61,11 +61,9 @@
 
 <script type="ecmascript-6">
 import { dateFtt } from "./date";
-import utils from "./utils.js";
 export default {
   data() {
     return {
-      utils: new utils(),
       screenHeight: 0,
       show: false,
       zIndex: -1,
@@ -74,8 +72,7 @@ export default {
       startDate: null,
       endDate: null,
       fixMonth: null,
-      dayGap: 1,
-      today: new Date()
+      dayGap: 1
     };
   },
   props: {
@@ -98,14 +95,6 @@ export default {
     }
   },
   computed: {
-    chooseTime: {
-      get() {
-        return this.utils.dealDate(this.today);
-      },
-      set(val) {
-        this.today = val;
-      }
-    },
     wrapperStyle() {
       return `height: ${this.screenHeight}px; z-index: ${this.zIndex}`;
     },
@@ -126,11 +115,6 @@ export default {
     });
   },
   methods: {
-    onConfirm() {
-      this.$emit("confirm", this.chooseTime);
-
-      this.hideDate();
-    },
     // 选择日期
     selectDate(month, day) {
       console.log("选择的时间", month, day, this.startText, this.isMultiple);
@@ -138,93 +122,30 @@ export default {
         return "";
       }
       this.dayGap = 0;
-      if (!this.isMultiple) {
-        //只允许单选的情况
-
-        if (!this.startDate) {
-          //如果不存在开始时间
-
-          this.startDate = new Date(`${month.month}/${day.num}`);
-          // this._clearStatus()
-          this.chooseTime = `${month.month}/${day.num}`.replace(/\//g, "-");
-          this._setStatus(month, day, this.startText);
-
-          this.$emit("setStartDate", this.startDate);
-        } else if (
-          //选中时间小于开始时间 或者 开始时间和结束时间同时存在
-          new Date(`${month.month}/${day.num}`).getTime() <
-            this.startDate.getTime() ||
-          this.startDate
-        ) {
-          console.log(
-            "第二种情况",
-            `${month.month}/${day.num}`,
-            this.startDate
-          );
-          this.startDate = new Date(`${month.month}/${day.num}`);
-          this.chooseTime = `${month.month}/${day.num}`.replace(/\//g, "-");
-          this._clearStatus();
-          this._setStatus(month, day, this.startText);
-          this.$emit("setStartDate", this.startDate);
-        } else if (
-          //存在开始时间，不存结束时间，且选中时间不等于开始时间
-          this.startDate &&
-          this.startDate.getTime() !==
-            new Date(`${month.month}/${day.num}`).getTime()
-        ) {
-          console.log(
-            "第三种情况",
-            `${month.month}/${day.num}`,
-            this.startDate
-          );
-
-          this._clearStatus();
-          this._setStatus(month, day, this.endText);
-        }
-
-        return;
-      }
-
-      if (!this.startDate) {
-        //如果不存在开始时间
-
+      if (!this.startDate && !this.isMultiple) {
+        // 刚开始选择的时候,并且日期单选
         this.startDate = new Date(`${month.month}/${day.num}`);
         // this._clearStatus()
         this._setStatus(month, day, this.startText);
 
         this.$emit("setStartDate", this.startDate);
       } else if (
-        //选中时间小于开始时间 或者 开始时间和结束时间同时存在
         new Date(`${month.month}/${day.num}`).getTime() <
           this.startDate.getTime() ||
         (this.startDate && this.endDate)
       ) {
-        console.log(
-          "第二种情况",
-          `${month.month}/${day.num}`,
-          this.startDate,
-          this.endDate
-        );
         this.startDate = new Date(`${month.month}/${day.num}`);
         this._clearStatus();
         this.endDate = null;
         this._setStatus(month, day, this.startText);
         this.$emit("setStartDate", this.startDate);
       } else if (
-        //存在开始时间，不存结束时间，且选中时间不等于开始时间
         this.startDate &&
         !this.endDate &&
         this.startDate.getTime() !==
           new Date(`${month.month}/${day.num}`).getTime()
       ) {
-        console.log(
-          "第三种情况",
-          `${month.month}/${day.num}`,
-          this.startDate,
-          this.endDate
-        );
         this.endDate = new Date(`${month.month}/${day.num}`);
-        this._clearStatus();
         this._setStatus(month, day, this.endText);
         this.$emit("setEndDate", this.endDate);
         this.dayGap =
@@ -485,11 +406,6 @@ export default {
 
 <style lang="stylus" rel="stylesheet/stylus" scoped>
 @import './mixin';
-
-.iconfont_1 {
-  font-size: 16px !important;
-  color: #000 !important;
-}
 
 .cal-trigger {
   flex(row, center, space-between);
