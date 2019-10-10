@@ -16,7 +16,7 @@ $ npm install vue-mobile-hotel-calendar-tmd -S
 ```
 ### js
 ```
-import Calendar from 'vue-mobile-hotel-calendar'
+import Calendar from 'vue-mobile-hotel-calendar-tmd'
 ```
 
 ## 触发
