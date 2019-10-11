@@ -1,23 +1,5 @@
 <template lang="html">
   <div class="calendar">
-    <!-- <div class="cal-trigger" @click="editDate">
-      <div class="cal-result">
-        <div class="start-date">
-          <span class="date-time">{{getSelectedDate(startDate)}}</span>
-          <span class="date-days">今天</span>
-        </div>
-        <div class="blank">
-          —
-        </div>
-        <div class="end-date">
-          <span class="date-time">{{getSelectedDate(endDate)}}</span>
-          <span class="date-days">明天</span>
-        </div>
-      </div>
-      <div class="cal-total" v-if="dayGap">
-        共{{dayGap}}晚
-      </div>
-    </div> -->
     <div class="cal-container" :style="wrapperStyle">
       <transition name="slide">
         <div class="cal-wrapper" v-if="show" :style="wrapperStyle">
@@ -43,9 +25,7 @@
               <div class="cm-month" v-for="(month, index) in calList" :key="index">
                 <div class="cmm-header" v-text="getDateFormat(month.month)"></div>
                 <div class="cmm-main">
-                  <div class="day-item" :class="{'order': day.status, 'contain': day.contain}" v-for="(day, index) in month.days" :key="index" @click="selectDate(month, day)">
-                    <!-- <div class="info price" v-if="day.num && day.type !== 'past'">￥{{day.price}}</div>
-                    <div class="info price" v-else></div> -->
+                  <div class="day-item" :class="{'order': day.status, 'contain': day.contain}" v-for="(day, index) in month.days" :key="index" @click="selectDate(month, day)">                 
                     <div class="info num" :class="{'weekend': day.type === 'weekend','holiday': day.type === 'holiday', 'past': day.type === 'past'}">{{day.num}}</div>
                     <div class="info tag" v-if="day.num">{{day.status}}</div>
                   </div>
@@ -102,9 +82,19 @@ export default {
       //是否多选：默认单选
       type: Boolean,
       default: false
+    },
+    defaultStartDate: {
+      type: String,
+      default: ""
     }
   },
-
+  watch: {
+    calList() {
+      this.$nextTick(() => {
+        setTimeout(() => {}, 500);
+      });
+    }
+  },
   computed: {
     chooseTime: {
       get() {
@@ -123,20 +113,37 @@ export default {
       return `height: 90%`;
     }
   },
+  updated() {
+    // if (document.getElementsByClassName("order")[0]) {
+    //   console.log("执行了更新3");
+    //   let orderNode = document.getElementsByClassName("order")[0].parentNode
+    //     .parentNode;
+    //   const Height = orderNode.offsetTop;
+    //   document.getElementsByClassName("cm-main")[0].scrollTop = Height;
+    // }
+  },
   mounted() {
     //一天的毫秒数
-    const oneDayTime = 24 * 60 * 60 * 1000;
-    this.multipleDate.startDate = this.utils.dealDate(new Date());
-    this.multipleDate.endDate = this.utils.dealDate(
-      new Date().getTime() + oneDayTime
-    );
+    console.log("贡献者:tumingdong @1.1.3");
+    if (this.isMultiple) {
+      //多选
+      const oneDayTime = 24 * 60 * 60 * 1000;
+      this.multipleDate.startDate = this.utils.dealDate(new Date());
+      this.multipleDate.endDate = this.utils.dealDate(
+        new Date().getTime() + oneDayTime
+      );
+    }
     this.screenHeight = window.screen.height;
     this.date = new Date();
-    this.startDate = this.date;
-    this.endDate = new Date(
-      `${this.date.getFullYear()}/${this.date.getMonth() +
-        1}/${this.date.getDate() + 1}`
-    );
+    this.startDate = this.defaultStartDate
+      ? new Date(this.defaultStartDate)
+      : this.date;
+    this.endDate = this.isMultiple
+      ? new Date(
+          `${this.date.getFullYear()}/${this.date.getMonth() +
+            1}/${this.date.getDate() + 1}`
+        )
+      : null;
     this.$nextTick(() => {
       this._calcDate();
     });
@@ -144,6 +151,7 @@ export default {
   methods: {
     onConfirm() {
       //若是双选，判断是否选了结束时间
+
       if (this.isMultiple && !this.endDate) {
         Toast({
           message: "请选择结束时间",
@@ -164,19 +172,16 @@ export default {
       this.dayGap = 0;
       if (!this.isMultiple) {
         //只允许单选的情况
-
         if (!this.startDate) {
           //如果不存在开始时间
-
           this.startDate = new Date(`${month.month}/${day.num}`);
           // this._clearStatus()
           this.chooseTime = `${month.month}/${day.num}`.replace(/\//g, "-");
           this._setStatus(month, day, this.startText);
-
           this.$emit("setStartDate", this.startDate);
         } else if (
           //选中时间小于开始时间 或者 开始时间和结束时间同时存在
-          new Date(`${month.month}/${day.num}`).getTime() <
+          new Date(`${month.month}/${day.num}`).getTime() >
             this.startDate.getTime() ||
           this.startDate
         ) {
@@ -186,6 +191,7 @@ export default {
             this.startDate
           );
           this.startDate = new Date(`${month.month}/${day.num}`);
+          this.endDate = null;
           this.chooseTime = `${month.month}/${day.num}`.replace(/\//g, "-");
           this._clearStatus();
           this._setStatus(month, day, this.startText);
@@ -285,16 +291,17 @@ export default {
           },
           this.startText
         );
-        this._setStatus(
-          {
-            month: `${this.endDate.getFullYear()}/${this.endDate.getMonth() +
-              1}`
-          },
-          {
-            num: `${this.endDate.getDate()}`
-          },
-          this.endText
-        );
+        this.isMultiple &&
+          this._setStatus(
+            {
+              month: `${this.endDate.getFullYear()}/${this.endDate.getMonth() +
+                1}`
+            },
+            {
+              num: `${this.endDate.getDate()}`
+            },
+            this.endText
+          );
       });
     },
     hideDate() {
@@ -355,7 +362,7 @@ export default {
     _calcDate(cYear) {
       // 获取当前年份
       let currentYear = cYear || this.date.getFullYear();
-      let currentMonth = cYear ? 1 : this.date.getMonth() + 1;
+      let currentMonth = cYear ? 1 : this.date.getMonth() - 1;
       this.fixMonth = dateFtt(
         "yyyy年MM月",
         new Date(`${currentYear}/${currentMonth}/1`)
@@ -366,7 +373,7 @@ export default {
     },
     _calc(y, m) {
       //创建日历数据
-      let max = m + 5;
+      let max = m + 3;
       let year = y;
       let month = m;
       for (let i = m; i < max; i++) {
@@ -399,6 +406,8 @@ export default {
         }
 
         this.calList.push(obj);
+        //定位默认选中日期所在的位置
+
         // obj.days.forEach((el) => {
         //   if (el.num) {
         //     let time = dateFtt('yyyyMMdd', new Date(`${year}/${month}/${el.num}`))
@@ -453,7 +462,7 @@ export default {
       this.calList.forEach(el => {
         el.days.forEach(e => {
           if (
-            new Date(`${el.month}/${e.num}`).getTime() <
+            new Date(`${el.month}/${e.num}`).getTime() >
             new Date(
               `${this.date.getFullYear()}/${this.date.getMonth() +
                 1}/${this.date.getDate()}`
