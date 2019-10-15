@@ -1,6 +1,6 @@
 {
   "name": "vue-mobile-hotel-calendar-tmd",
-  "version": "1.1.2",
+  "version": "1.2.3",
   "description": "vue-移动端-酒店预订类-日历组件",
   "main": "index.js",
   "scripts": {
@@ -8,12 +8,7 @@
     "start": "webpack-dev-server --hot --inline",
     "build": "webpack --display-error-details --config webpack.config.js"
   },
-  "keywords": [
-    "vue",
-    "移动端",
-    "酒店预订类",
-    "日历组件"
-  ],
+  "keywords": ["vue", "移动端", "酒店预订类", "日历组件"],
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
