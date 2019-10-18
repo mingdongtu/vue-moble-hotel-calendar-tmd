@@ -677,7 +677,7 @@ export default {
             }
 
             &.order {
-              background-color: #D70D19;
+              background-color: #ffb403;
               color: #fff;
 
               .num {
