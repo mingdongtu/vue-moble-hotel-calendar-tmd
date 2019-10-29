@@ -688,7 +688,7 @@ export default {
             }
 
             &.contain {
-              background-color: rgba(215, 13, 25, 0.5);
+              background-color: #ffb403;
               color: #fff;
 
               .num {
