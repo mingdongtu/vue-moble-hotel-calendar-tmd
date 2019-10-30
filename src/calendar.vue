@@ -66,6 +66,11 @@ export default {
     };
   },
   props: {
+    isFuture: {
+      //是否选中未来时间
+      type: Boolean,
+      default: false
+    },
     total: {
       type: Boolean,
       default: true
@@ -362,7 +367,15 @@ export default {
     _calcDate(cYear) {
       // 获取当前年份
       let currentYear = cYear || this.date.getFullYear();
-      let currentMonth = cYear ? 1 : this.date.getMonth() - 1;
+      let currentMonth;
+
+      if (!this.isFuture) {
+        currentMonth = cYear ? 1 : this.date.getMonth() - 1;
+      } else {
+        currentMonth = cYear ? 1 : this.date.getMonth() + 1;
+      }
+      console.log("版本333", currentMonth, this.isFuture);
+
       this.fixMonth = dateFtt(
         "yyyy年MM月",
         new Date(`${currentYear}/${currentMonth}/1`)
@@ -461,15 +474,28 @@ export default {
     _getHoliday() {
       this.calList.forEach(el => {
         el.days.forEach(e => {
-          if (
-            new Date(`${el.month}/${e.num}`).getTime() >
-            new Date(
-              `${this.date.getFullYear()}/${this.date.getMonth() +
-                1}/${this.date.getDate()}`
-            ).getTime()
-          ) {
-            e.type = "past";
+          if (!this.isFuture) {
+            if (
+              new Date(`${el.month}/${e.num}`).getTime() >
+              new Date(
+                `${this.date.getFullYear()}/${this.date.getMonth() +
+                  1}/${this.date.getDate()}`
+              ).getTime()
+            ) {
+              e.type = "past";
+            }
+          } else {
+            if (
+              new Date(`${el.month}/${e.num}`).getTime() <
+              new Date(
+                `${this.date.getFullYear()}/${this.date.getMonth() +
+                  1}/${this.date.getDate()}`
+              ).getTime()
+            ) {
+              e.type = "past";
+            }
           }
+
           if (e.num && !e.type) {
             let time = dateFtt("yyyyMMdd", new Date(`${el.month}/${e.num}`));
             this.$emit("getHoliday", time, e);
