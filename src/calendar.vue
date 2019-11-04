@@ -7,7 +7,7 @@
           <div class="cal-main" :style="mainStyle">
             <div class="cm-header">
               选择日期
-              <div class="close-icon"><span class="iconfont iconfont_1" @click.stop='onConfirm'>确定</span></div>
+              <div class="close-icon"><span class="iconfont iconfont_1" @click.stop='onConfirm'>取消</span></div>
             </div>
             <div class="cm-days">
               <div class="cm-days-item holiday">日</div>
@@ -59,6 +59,7 @@ export default {
       fixMonth: null,
       dayGap: 1,
       today: new Date(),
+
       multipleDate: {
         startDate: "",
         endDate: ""
@@ -82,6 +83,11 @@ export default {
     endText: {
       type: String,
       default: "退房"
+    },
+
+    defaultEndDate: {
+      type: String,
+      default: ""
     },
     isMultiple: {
       //是否多选：默认单选
@@ -130,6 +136,8 @@ export default {
   mounted() {
     //一天的毫秒数
     console.log("贡献者:tumingdong @1.1.3");
+    this.screenHeight = window.screen.height;
+    this.date = new Date();
     if (this.isMultiple) {
       //多选
       const oneDayTime = 24 * 60 * 60 * 1000;
@@ -137,18 +145,15 @@ export default {
       this.multipleDate.endDate = this.utils.dealDate(
         new Date().getTime() + oneDayTime
       );
+      this.defaultStartDate &&
+        (this.startDate = new Date(this.defaultStartDate));
+      this.defaultEndDate && (this.endDate = new Date(this.defaultEndDate));
+    } else {
+      this.startDate = this.defaultStartDate
+        ? new Date(this.defaultStartDate)
+        : "";
     }
-    this.screenHeight = window.screen.height;
-    this.date = new Date();
-    this.startDate = this.defaultStartDate
-      ? new Date(this.defaultStartDate)
-      : this.date;
-    this.endDate = this.isMultiple
-      ? new Date(
-          `${this.date.getFullYear()}/${this.date.getMonth() +
-            1}/${this.date.getDate() + 1}`
-        )
-      : null;
+
     this.$nextTick(() => {
       this._calcDate();
     });
@@ -164,7 +169,8 @@ export default {
         });
         return;
       }
-      this.$emit("confirm", this.chooseTime);
+      console.log("我选择😯的时间", this.chooseTime);
+      // this.$emit("confirm", this.chooseTime);
 
       this.hideDate();
     },
@@ -184,6 +190,7 @@ export default {
           this.chooseTime = `${month.month}/${day.num}`.replace(/\//g, "-");
           this._setStatus(month, day, this.startText);
           this.$emit("setStartDate", this.startDate);
+          this.onSure();
         } else if (
           //选中时间小于开始时间 或者 开始时间和结束时间同时存在
           new Date(`${month.month}/${day.num}`).getTime() >
@@ -201,20 +208,18 @@ export default {
           this._clearStatus();
           this._setStatus(month, day, this.startText);
           this.$emit("setStartDate", this.startDate);
+          this.onSure();
         } else if (
           //存在开始时间，不存结束时间，且选中时间不等于开始时间
           this.startDate &&
           this.startDate.getTime() !==
             new Date(`${month.month}/${day.num}`).getTime()
         ) {
-          console.log(
-            "第三种情况",
-            `${month.month}/${day.num}`,
-            this.startDate
-          );
-
+          this.startDate = new Date(`${month.month}/${day.num}`);
+          this.endDate = null;
           this._clearStatus();
           this._setStatus(month, day, this.endText);
+          this.onSure();
         }
 
         return;
@@ -239,12 +244,6 @@ export default {
         this.endDate = null;
         this._setStatus(month, day, this.startText);
         this.$emit("setStartDate", this.startDate);
-        console.log(
-          "第二种情况",
-          `${month.month}/${day.num}`,
-          this.startDate,
-          this.endDate
-        );
       } else if (
         //存在开始时间，不存结束时间，且选中时间不等于开始时间
         this.startDate &&
@@ -253,21 +252,34 @@ export default {
           new Date(`${month.month}/${day.num}`).getTime()
       ) {
         this.endDate = new Date(`${month.month}/${day.num}`);
-        // this._clearStatus();
         this._setStatus(month, day, this.endText);
         this.$emit("setEndDate", this.endDate);
-        console.log(
-          "第三种情况",
-          `${month.month}/${day.num}`,
-          this.startDate,
-          this.endDate
-        );
+
         this.dayGap =
           (this.endDate.getTime() - this.startDate.getTime()) /
             1000 /
             3600 /
             24 +
           "";
+        this.multipleDate = {
+          startDate: this.utils.dealDate(this.startDate),
+          endDate: this.endDate ? this.utils.dealDate(this.endDate) : null
+        };
+        this.onSure();
+      } else if (
+        //存在开始时间，不存结束时间，且选中时间等于开始时间
+        this.startDate &&
+        !this.endDate &&
+        this.startDate.getTime() ===
+          new Date(`${month.month}/${day.num}`).getTime()
+      ) {
+        this.endDate = new Date(`${month.month}/${day.num}`);
+        this._setStatus(month, day, this.endText);
+        this.multipleDate = {
+          startDate: this.utils.dealDate(this.startDate),
+          endDate: this.endDate ? this.utils.dealDate(this.endDate) : null
+        };
+        this.onSure();
       }
 
       this.multipleDate = {
@@ -275,6 +287,13 @@ export default {
         endDate: this.endDate ? this.utils.dealDate(this.endDate) : null
       };
       this.$emit("change", this.startDate, this.endDate, this.dayGap);
+    },
+    onSure() {
+      //直接关闭
+      setTimeout(() => {
+        this.$emit("confirm", this.chooseTime);
+        this.hideDate();
+      }, 500);
     },
 
     getDateFormat(date) {
@@ -524,6 +543,7 @@ export default {
               new Date(`${el.month}/${e.num}`).getTime() &&
             new Date(`${el.month}/${e.num}`).getTime() < this.endDate.getTime()
           ) {
+            console.log("我的日月～～～～～～～～～～～～", month, day);
             e.contain = "contain";
           }
           if (el.month === month.month && e.num === +day.num) {
@@ -582,7 +602,7 @@ export default {
 }
 
 .cal-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   z-index: -1;
   width: 100%;
@@ -714,7 +734,7 @@ export default {
             }
 
             &.contain {
-              background-color: #ffb403;
+              background-color: #f8e0a7;
               color: #fff;
 
               .num {
