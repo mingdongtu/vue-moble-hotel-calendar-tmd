@@ -141,13 +141,16 @@ export default {
     if (this.isMultiple) {
       //多选
       const oneDayTime = 24 * 60 * 60 * 1000;
-      this.multipleDate.startDate = this.utils.dealDate(new Date());
-      this.multipleDate.endDate = this.utils.dealDate(
-        new Date().getTime() + oneDayTime
-      );
+      this.multipleDate.startDate = this.defaultStartDate
+        ? this.defaultStartDate
+        : this.utils.dealDate(new Date());
+      this.multipleDate.endDate = this.defaultEndDate
+        ? this.defaultEndDate
+        : this.utils.dealDate(new Date().getTime() + oneDayTime);
       this.defaultStartDate &&
         (this.startDate = new Date(this.defaultStartDate));
       this.defaultEndDate && (this.endDate = new Date(this.defaultEndDate));
+      // this._setStatus(month, day, this.startText)
     } else {
       this.startDate = this.defaultStartDate
         ? new Date(this.defaultStartDate)
@@ -176,7 +179,7 @@ export default {
     },
     // 选择日期
     selectDate(month, day) {
-      console.log("选择的时间", month, day, this.startText, this.isMultiple);
+      console.log("选择的时间", month, day, `${month.month}/${day.num}`);
       if (day.type === "past") {
         return "";
       }
@@ -289,7 +292,14 @@ export default {
       this.$emit("change", this.startDate, this.endDate, this.dayGap);
     },
     onSure() {
-      //直接关闭
+      //直接关
+      if (this.isMultiple) {
+        for (let k in this.chooseTime) {
+          this.chooseTime[k] = this.utils.dealDate(this.chooseTime[k]);
+        }
+      } else {
+        this.chooseTime = this.utils.dealDate(this.chooseTime);
+      }
       setTimeout(() => {
         this.$emit("confirm", this.chooseTime);
         this.hideDate();
@@ -530,6 +540,11 @@ export default {
         "px";
     },
     _setStatus(month, day, status) {
+      console.log("开始设置状态😊", month, day, status);
+      if (this.defaultEndDate && this.defaultStartDate) {
+        month = { month: month };
+        day = { num: parseInt(day) };
+      }
       this.calList.forEach(el => {
         el.days.forEach(e => {
           e.contain = "";
@@ -543,7 +558,6 @@ export default {
               new Date(`${el.month}/${e.num}`).getTime() &&
             new Date(`${el.month}/${e.num}`).getTime() < this.endDate.getTime()
           ) {
-            console.log("我的日月～～～～～～～～～～～～", month, day);
             e.contain = "contain";
           }
           if (el.month === month.month && e.num === +day.num) {
