@@ -242,8 +242,9 @@ export default {
           this.startDate.getTime() ||
         (this.startDate && this.endDate)
       ) {
-        this.startDate = new Date(`${month.month}/${day.num}`);
         this._clearStatus();
+        this.startDate = new Date(`${month.month}/${day.num}`);
+
         this.endDate = null;
         this._setStatus(month, day, this.startText);
         this.$emit("setStartDate", this.startDate);
@@ -293,17 +294,23 @@ export default {
     },
     onSure() {
       //直接关
+
       if (this.isMultiple) {
-        for (let k in this.chooseTime) {
-          this.chooseTime[k] = this.utils.dealDate(this.chooseTime[k]);
-        }
+        console.log("处理时间😄", this.chooseTime);
+        setTimeout(() => {
+          this.$emit("confirm", this.chooseTime);
+          this.hideDate();
+        }, 500);
       } else {
-        this.chooseTime = this.utils.dealDate(this.chooseTime);
+        const day =
+          this.chooseTime.split("-")[2] < 10
+            ? 0 + "" + this.chooseTime.split("-")[2]
+            : this.chooseTime.split("-")[2];
+        setTimeout(() => {
+          this.$emit("confirm", this.chooseTime.slice(0, 8) + day);
+          this.hideDate();
+        }, 500);
       }
-      setTimeout(() => {
-        this.$emit("confirm", this.chooseTime);
-        this.hideDate();
-      }, 500);
     },
 
     getDateFormat(date) {
@@ -399,9 +406,9 @@ export default {
       let currentMonth;
 
       if (!this.isFuture) {
-        currentMonth = cYear ? 1 : this.date.getMonth() - 1;
+        currentMonth = cYear ? 1 : this.date.getMonth() - 2;
       } else {
-        currentMonth = cYear ? 1 : this.date.getMonth() + 1;
+        currentMonth = cYear ? 1 : this.date.getMonth() + 2;
       }
       console.log("版本333", currentMonth, this.isFuture);
 
@@ -415,7 +422,7 @@ export default {
     },
     _calc(y, m) {
       //创建日历数据
-      let max = m + 3;
+      let max = m + 4;
       let year = y;
       let month = m;
       for (let i = m; i < max; i++) {
