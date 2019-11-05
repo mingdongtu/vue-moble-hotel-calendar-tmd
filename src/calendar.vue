@@ -141,6 +141,11 @@ export default {
     if (this.isMultiple) {
       //多选
       const oneDayTime = 24 * 60 * 60 * 1000;
+      console.log(
+        "我的默认时间@@@@",
+        this.defaultStartDate,
+        this.defaultEndDate
+      );
       this.multipleDate.startDate = this.defaultStartDate
         ? this.defaultStartDate
         : this.utils.dealDate(new Date());
@@ -548,10 +553,10 @@ export default {
     },
     _setStatus(month, day, status) {
       console.log("开始设置状态😊", month, day, status);
-      if (this.defaultEndDate && this.defaultStartDate) {
-        month = { month: month };
-        day = { num: parseInt(day) };
-      }
+      // if (this.defaultEndDate && this.defaultStartDate) {
+      //   month = { month: month };
+      //   day = { num: parseInt(day) };
+      // }
       this.calList.forEach(el => {
         el.days.forEach(e => {
           e.contain = "";
