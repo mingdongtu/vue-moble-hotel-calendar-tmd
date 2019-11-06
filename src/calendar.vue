@@ -135,6 +135,7 @@ export default {
   },
   mounted() {
     //一天的毫秒数
+    this.editDate();
     console.log("贡献者:tumingdong @1.1.3");
     this.screenHeight = window.screen.height;
     this.date = new Date();
@@ -324,6 +325,13 @@ export default {
     editDate() {
       this.show = true;
       this.zIndex = 10000;
+      console.log(
+        "我的开始时间～～～结束时间",
+        this.startDate,
+        this.endDate,
+        this.startText,
+        this.endText
+      );
       this.$nextTick(() => {
         this._getCalHeight();
         this.bindScroll();
@@ -353,6 +361,7 @@ export default {
     hideDate() {
       this.show = false;
       this.zIndex = -1;
+      this.$emit("close");
     },
     bindScroll() {
       document
@@ -552,27 +561,30 @@ export default {
         "px";
     },
     _setStatus(month, day, status) {
-      console.log("开始设置状态😊", month, day, status);
       // if (this.defaultEndDate && this.defaultStartDate) {
       //   month = { month: month };
       //   day = { num: parseInt(day) };
       // }
       this.calList.forEach(el => {
+        console.log("一级", el);
         el.days.forEach(e => {
           e.contain = "";
           if (e.status === status) {
             e.status = "";
           }
           if (
+            //存在开始时间、结束时间，时间小于结束时间给予contain属性
             this.startDate &&
             this.endDate &&
-            this.startDate.getTime() <
+            new Date(this.startDate).getTime() <
               new Date(`${el.month}/${e.num}`).getTime() &&
-            new Date(`${el.month}/${e.num}`).getTime() < this.endDate.getTime()
+            new Date(`${el.month}/${e.num} 08:00:00`).getTime() <
+              new Date(this.endDate).getTime()
           ) {
             e.contain = "contain";
           }
           if (el.month === month.month && e.num === +day.num) {
+            //选中月存在于当前数据中
             e.status = status;
           }
         });
