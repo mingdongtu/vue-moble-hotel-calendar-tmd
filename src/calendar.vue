@@ -302,7 +302,6 @@ export default {
       //直接关
 
       if (this.isMultiple) {
-        console.log("处理时间😄", this.chooseTime);
         setTimeout(() => {
           this.$emit("confirm", this.chooseTime);
           this.hideDate();
@@ -312,8 +311,15 @@ export default {
           this.chooseTime.split("-")[2] < 10
             ? 0 + "" + this.chooseTime.split("-")[2]
             : this.chooseTime.split("-")[2];
+        console.log(
+          "源码时间～～～～～～～～～～",
+          this.chooseTime,
+          this.chooseTime.slice(0, 8) + day
+        );
         setTimeout(() => {
-          this.$emit("confirm", this.chooseTime.slice(0, 8) + day);
+          this.$emit("confirm", {
+            startDate: this.chooseTime.slice(0, 8) + day
+          });
           this.hideDate();
         }, 500);
       }
@@ -325,13 +331,7 @@ export default {
     editDate() {
       this.show = true;
       this.zIndex = 10000;
-      console.log(
-        "我的开始时间～～～结束时间",
-        this.startDate,
-        this.endDate,
-        this.startText,
-        this.endText
-      );
+
       this.$nextTick(() => {
         this._getCalHeight();
         this.bindScroll();
@@ -424,7 +424,6 @@ export default {
       } else {
         currentMonth = cYear ? 1 : this.date.getMonth() + 2;
       }
-      console.log("版本333", currentMonth, this.isFuture);
 
       this.fixMonth = dateFtt(
         "yyyy年MM月",
@@ -566,7 +565,6 @@ export default {
       //   day = { num: parseInt(day) };
       // }
       this.calList.forEach(el => {
-        console.log("一级", el);
         el.days.forEach(e => {
           e.contain = "";
           if (e.status === status) {
@@ -642,6 +640,7 @@ export default {
 .cal-container {
   position: fixed;
   top: 0;
+  left: 0;
   z-index: -1;
   width: 100%;
   overflow: hidden;
