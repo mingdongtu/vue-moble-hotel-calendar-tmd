@@ -5,7 +5,10 @@ class DealTime {
 
   }
   dealDate(date) {
-    date = new Date(date);
+    if (!date instanceof Date) {
+      date = new Date(date.replace(/\-/, '/'));
+    }
+
     const year = date.getFullYear();
     const month = date.getMonth() < 9 ? `0${date.getMonth() + 1}` : date.getMonth() + 1;
     const day = date.getDate();

@@ -335,17 +335,20 @@ export default {
       this.$nextTick(() => {
         this._getCalHeight();
         this.bindScroll();
-        this._setStatus(
-          {
-            month: `${this.startDate.getFullYear()}/${this.startDate.getMonth() +
-              1}`
-          },
-          {
-            num: `${this.startDate.getDate()}`
-          },
-          this.startText
-        );
+        if (this.startDate) {
+          this._setStatus(
+            {
+              month: `${this.startDate.getFullYear()}/${this.startDate.getMonth() +
+                1}`
+            },
+            {
+              num: `${this.startDate.getDate()}`
+            },
+            this.startText
+          );
+        }
         this.isMultiple &&
+          this.endDate != "" &&
           this._setStatus(
             {
               month: `${this.endDate.getFullYear()}/${this.endDate.getMonth() +
