@@ -1,7 +1,7 @@
 <template lang="html">
   <div class="calendar">
     <div class="cal-container" :style="wrapperStyle">
-      <transition name="slide">
+      <transition name="fade">
         <div class="cal-wrapper" v-if="show" :style="wrapperStyle">
           <div class="cal-mask" @click="hideDate"></div>
           <div class="cal-main" :style="mainStyle">
@@ -42,10 +42,13 @@
 <script type="ecmascript-6">
 import { dateFtt } from "./date";
 import utils from "./utils.js";
-import { Toast } from "vant";
+import { Toast, Popup } from "vant";
 import Vue from "vue";
 Vue.use(Toast);
 export default {
+  components: {
+    [Popup.name]: Popup
+  },
   data() {
     return {
       utils: new utils(),
@@ -147,12 +150,14 @@ export default {
         this.defaultStartDate,
         this.defaultEndDate
       );
+      let onlyDate = new Date();
+      onlyDate.setDate(onlyDate.getDate() + 1);
       this.multipleDate.startDate = this.defaultStartDate
         ? this.defaultStartDate
         : this.utils.dealDate(new Date());
       this.multipleDate.endDate = this.defaultEndDate
         ? this.defaultEndDate
-        : this.utils.dealDate(new Date().getTime() + oneDayTime);
+        : this.utils.dealDate(onlyDate);
       this.defaultStartDate &&
         (this.startDate = new Date(this.defaultStartDate));
       this.defaultEndDate && (this.endDate = new Date(this.defaultEndDate));
@@ -307,18 +312,9 @@ export default {
           this.hideDate();
         }, 500);
       } else {
-        const day =
-          this.chooseTime.split("-")[2] < 10
-            ? 0 + "" + this.chooseTime.split("-")[2]
-            : this.chooseTime.split("-")[2];
-        console.log(
-          "源码时间～～～～～～～～～～",
-          this.chooseTime,
-          this.chooseTime.slice(0, 8) + day
-        );
         setTimeout(() => {
           this.$emit("confirm", {
-            startDate: this.chooseTime.slice(0, 8) + day
+            startDate: this.chooseTime
           });
           this.hideDate();
         }, 500);
@@ -335,7 +331,7 @@ export default {
       this.$nextTick(() => {
         this._getCalHeight();
         this.bindScroll();
-        if (this.startDate) {
+        if (this.startDate instanceof Date) {
           this._setStatus(
             {
               month: `${this.startDate.getFullYear()}/${this.startDate.getMonth() +
@@ -346,19 +342,18 @@ export default {
             },
             this.startText
           );
+          this.isMultiple &&
+            this._setStatus(
+              {
+                month: `${this.endDate.getFullYear()}/${this.endDate.getMonth() +
+                  1}`
+              },
+              {
+                num: `${this.endDate.getDate()}`
+              },
+              this.endText
+            );
         }
-        this.isMultiple &&
-          this.endDate != "" &&
-          this._setStatus(
-            {
-              month: `${this.endDate.getFullYear()}/${this.endDate.getMonth() +
-                1}`
-            },
-            {
-              num: `${this.endDate.getDate()}`
-            },
-            this.endText
-          );
       });
     },
     hideDate() {
@@ -419,6 +414,7 @@ export default {
     },
     _calcDate(cYear) {
       // 获取当前年份
+      console.log("421获取当年年份", this.date);
       let currentYear = cYear || this.date.getFullYear();
       let currentMonth;
 
@@ -524,6 +520,7 @@ export default {
       return days;
     },
     _getHoliday() {
+      console.log("源码527", this.date);
       this.calList.forEach(el => {
         el.days.forEach(e => {
           if (!this.isFuture) {
