@@ -107,6 +107,21 @@ export default {
       this.$nextTick(() => {
         setTimeout(() => {}, 500);
       });
+    },
+    show(val) {
+      this.$nextTick(() => {
+        if (document.querySelector(".order")) {
+          setTimeout(() => {
+            const height = document.querySelector(".order").offsetTop;
+            document.querySelector(".cm-main").scrollBy(0, height);
+          }, 0);
+        } else {
+          setTimeout(() => {
+            const height = document.querySelector(".past").offsetTop;
+            document.querySelector(".cm-main").scrollBy(0, height);
+          }, 0);
+        }
+      });
     }
   },
   computed: {
