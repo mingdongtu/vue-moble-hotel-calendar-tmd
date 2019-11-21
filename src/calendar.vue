@@ -2,7 +2,8 @@
   <div class="calendar">
     <div class="cal-container" :style="wrapperStyle">
       <transition name="fade">
-        <div class="cal-wrapper" v-if="show" :style="wrapperStyle">
+  <!-- <van-popup v-model="show"  position="bottom" > -->
+        <div class="cal-wrapper"  v-if='show' :style="wrapperStyle">
           <div class="cal-mask" @click="hideDate"></div>
           <div class="cal-main" :style="mainStyle">
             <div class="cm-header">
@@ -35,6 +36,7 @@
           </div>
         </div>
       </transition>
+      <!-- </van-popup> -->
     </div>
   </div>
 </template>
@@ -43,6 +45,7 @@
 import { dateFtt } from "./date";
 import utils from "./utils.js";
 import { Toast, Popup } from "vant";
+
 import Vue from "vue";
 Vue.use(Toast);
 export default {
@@ -105,23 +108,11 @@ export default {
   watch: {
     calList() {
       this.$nextTick(() => {
-        setTimeout(() => {}, 500);
+        setTimeout(() => {}, 0);
       });
     },
     show(val) {
-      this.$nextTick(() => {
-        if (document.querySelector(".order")) {
-          setTimeout(() => {
-            const height = document.querySelector(".order").offsetTop;
-            document.querySelector(".cm-main").scrollBy(0, height);
-          }, 0);
-        } else {
-          setTimeout(() => {
-            const height = document.querySelector(".past").offsetTop;
-            document.querySelector(".cm-main").scrollBy(0, height);
-          }, 0);
-        }
-      });
+      this.goToRightPosition();
     }
   },
   computed: {
@@ -142,15 +133,7 @@ export default {
       return `height: 90%`;
     }
   },
-  updated() {
-    // if (document.getElementsByClassName("order")[0]) {
-    //   console.log("执行了更新3");
-    //   let orderNode = document.getElementsByClassName("order")[0].parentNode
-    //     .parentNode;
-    //   const Height = orderNode.offsetTop;
-    //   document.getElementsByClassName("cm-main")[0].scrollTop = Height;
-    // }
-  },
+  updated() {},
   mounted() {
     //一天的毫秒数
     this.editDate();
@@ -185,9 +168,32 @@ export default {
 
     this.$nextTick(() => {
       this._calcDate();
+      setTimeout(() => {
+        //生成前一年到10年前的时间，拼接到之前的list上
+        const year = this.date.getFullYear() - 10;
+        const nowYear = this.date.getFullYear();
+        const list = this._calc(year, 12, nowYear);
+        this.calList = list.concat(this.calList);
+        this.goToRightPosition();
+      }, 1000);
     });
   },
   methods: {
+    goToRightPosition() {
+      this.$nextTick(() => {
+        if (document.querySelector(".order")) {
+          setTimeout(() => {
+            const height = document.querySelector(".order").offsetTop;
+            document.querySelector(".cm-main").scrollTop = height - 95;
+          }, 0);
+        } else {
+          setTimeout(() => {
+            const height = document.querySelector(".past").offsetTop;
+            document.querySelector(".cm-main").scrollTop = height - 95;
+          }, 0);
+        }
+      });
+    },
     onConfirm() {
       //若是双选，判断是否选了结束时间
 
@@ -433,66 +439,82 @@ export default {
       let currentYear = cYear || this.date.getFullYear();
       let currentMonth;
 
-      if (!this.isFuture) {
-        currentMonth = cYear ? 1 : this.date.getMonth() - 2;
-      } else {
-        currentMonth = cYear ? 1 : this.date.getMonth() + 2;
-      }
+      // if (!this.isFuture) {
+      //   currentMonth = cYear ? 1 : this.date.getMonth() - 2;
+      // } else {
+      //   currentMonth = cYear ? 1 : this.date.getMonth() + 2;
+      // }
+      currentMonth = this.date.getMonth() + 1;
 
       this.fixMonth = dateFtt(
         "yyyy年MM月",
         new Date(`${currentYear}/${currentMonth}/1`)
       );
       this.calList.length = 0;
-      this._calc(currentYear, currentMonth);
+      const nowYear = this.date.getFullYear() + 1;
+      console.log(
+        "拿到的第一段时间",
+        currentYear,
+        currentMonth,
+        nowYear,
+        this._calc(currentYear, currentMonth, nowYear)
+      );
+      this.calList = this._calc(currentYear, currentMonth, nowYear);
       this._getHoliday();
     },
-    _calc(y, m) {
+    _calc(y, m = 12, nowYear) {
       //创建日历数据
       let max = m + 4;
       let year = y;
       let month = m;
-      for (let i = m; i < max; i++) {
-        if (i > 12) {
-          month = i - 12;
-          year = y + 1;
-        } else {
+      // const nowYear = new Date().getFullYear() + 1;
+      let list = [];
+      for (let k = y; k < nowYear; k++) {
+        for (let i = 1; i < 13; i++) {
+          // if (i > 12) {
+          //   month = i - 12;
+          //   year = y + 1;
+          // } else {
+          //   month = i;
+          // }
           month = i;
-        }
-        let firstDay = new Date(`${year}/${month}/1`);
-        let week = firstDay.getDay();
-        let obj = {
-          month: `${year}/${month}`,
-          days: []
-        };
-        for (let times = 0; times < week; times++) {
-          obj.days.push({
-            num: ""
-          });
-        }
-        let daysCount = this._getDaysCount(year, month);
-        for (let times = 1; times <= daysCount; times++) {
-          obj.days.push({
-            num: times,
-            type: "",
-            price: (300 + Math.random() * 100).toFixed(0),
-            status: "",
-            contain: ""
-          });
-        }
+          let firstDay = new Date(`${year}/${month}/1`);
+          let week = firstDay.getDay();
+          let obj = {
+            month: `${k}/${month}`,
+            days: []
+          };
+          for (let times = 0; times < week; times++) {
+            obj.days.push({
+              num: ""
+            });
+          }
+          let daysCount = this._getDaysCount(year, month);
+          for (let times = 1; times <= daysCount; times++) {
+            obj.days.push({
+              num: times,
+              type: "",
+              price: (300 + Math.random() * 100).toFixed(0),
+              status: "",
+              contain: ""
+            });
+          }
 
-        this.calList.push(obj);
-        //定位默认选中日期所在的位置
+          list.push(obj);
+          // this.calList.push(obj);
+          //定位默认选中日期所在的位置
 
-        // obj.days.forEach((el) => {
-        //   if (el.num) {
-        //     let time = dateFtt('yyyyMMdd', new Date(`${year}/${month}/${el.num}`))
-        //     getHoliday(time).then((res) => {
-        //       el.type = res.data === 0 ? 'normal' : res.data === 3 ? 'weekend' : 'holiday'
-        //     })
-        //   }
-        // })
+          // obj.days.forEach((el) => {
+          //   if (el.num) {
+          //     let time = dateFtt('yyyyMMdd', new Date(`${year}/${month}/${el.num}`))
+          //     getHoliday(time).then((res) => {
+          //       el.type = res.data === 0 ? 'normal' : res.data === 3 ? 'weekend' : 'holiday'
+          //     })
+          //   }
+          // })
+        }
       }
+      return list;
     },
     // 获取每月的总天数
     _getDaysCount(year, month) {
