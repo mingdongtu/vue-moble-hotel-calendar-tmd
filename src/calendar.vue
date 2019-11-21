@@ -55,6 +55,7 @@ export default {
   data() {
     return {
       utils: new utils(),
+      yearList: [],
       screenHeight: 0,
       show: false,
       zIndex: -1,
@@ -134,6 +135,19 @@ export default {
     }
   },
   updated() {},
+  created() {
+    //创建一个时间
+    const nowY = new Date().getFullYear();
+    const startY = nowY - 10;
+    let yearList = [];
+    for (let i = startY; i < nowY; i++) {
+      const obj = {};
+      obj.isExit = false;
+      obj.year = i;
+      yearList.push(obj);
+    }
+    this.yearList = yearList;
+  },
   mounted() {
     //一天的毫秒数
     this.editDate();
@@ -168,14 +182,14 @@ export default {
 
     this.$nextTick(() => {
       this._calcDate();
-      setTimeout(() => {
-        //生成前一年到10年前的时间，拼接到之前的list上
-        const year = this.date.getFullYear() - 10;
-        const nowYear = this.date.getFullYear();
-        const list = this._calc(year, 12, nowYear);
-        this.calList = list.concat(this.calList);
-        this.goToRightPosition();
-      }, 1000);
+      // setTimeout(() => {
+      //   //生成前一年到10年前的时间，拼接到之前的list上
+      //   const year = this.date.getFullYear() - 10;
+      //   const nowYear = this.date.getFullYear();
+      //   const list = this._calc(year, 12, nowYear);
+      //   this.calList = list.concat(this.calList);
+      //   this.goToRightPosition();
+      // }, 1000);
     });
   },
   methods: {
@@ -410,6 +424,20 @@ export default {
               "cm-fix"
             )[0].style.transform = `translateY(0px)`;
             this.fixMonth = el.textContent;
+            //滑动到二月的时候自动计算前一年的日历数据，并且进行拼接
+            const curMonth = parseInt(el.textContent.slice(-3, -1));
+            const curYear = parseInt(el.textContent.slice(0, 4));
+
+            const xindex = this.yearList.findIndex(
+              oitem => curYear == oitem.year
+            );
+            console.log("当前年~~~~~~", curYear, xindex);
+            if (xindex != -1 && !this.yearList[xindex].isExit) {
+              //还没有请求过
+              const list = this._calc(curYear - 1, 12, curYear);
+              this.calList = list.concat(this.calList);
+              this.yearList[xindex].isExit = true;
+            }
           } else if (
             el.offsetTop - scrollTop > baseHeight &&
             el.offsetTop - scrollTop < animateHeight
@@ -452,14 +480,8 @@ export default {
       );
       this.calList.length = 0;
       const nowYear = this.date.getFullYear() + 1;
-      console.log(
-        "拿到的第一段时间",
-        currentYear,
-        currentMonth,
-        nowYear,
-        this._calc(currentYear, currentMonth, nowYear)
-      );
-      this.calList = this._calc(currentYear, currentMonth, nowYear);
+
+      this.calList = this._calc(currentYear - 1, currentMonth, nowYear);
       this._getHoliday();
     },
     _calc(y, m = 12, nowYear) {
@@ -752,6 +774,7 @@ export default {
 
     .cm-main {
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
 
       .cm-month {
         .cmm-header {
