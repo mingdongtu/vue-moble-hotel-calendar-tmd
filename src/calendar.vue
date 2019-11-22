@@ -113,7 +113,15 @@ export default {
       });
     },
     show(val) {
-      this.goToRightPosition();
+      //一天的毫秒数
+      if (val) {
+        this.createTime();
+        // this.calList = [];
+        // this.$nextTick(() => {
+        //   this._calcDate();
+        // });
+        this.goToRightPosition();
+      }
     }
   },
   computed: {
@@ -123,7 +131,6 @@ export default {
         if (!this.isMultiple) return this.utils.dealDate(this.today);
       },
       set(val) {
-        console.log("给choostime赋值", val);
         this.today = val;
       }
     },
@@ -135,33 +142,16 @@ export default {
     }
   },
   updated() {},
-  created() {
-    //创建一个时间
-    const nowY = new Date().getFullYear() + 1;
-    const startY = nowY - 10;
-    let yearList = [];
-    for (let i = startY; i < nowY; i++) {
-      const obj = {};
-      obj.isExit = false;
-      obj.year = i;
-      yearList.push(obj);
-    }
-    this.yearList = yearList;
-  },
+  created() {},
   mounted() {
-    //一天的毫秒数
     this.editDate();
+    //一天的毫秒数
     console.log("贡献者:tumingdong @1.1.3");
     this.screenHeight = window.screen.height;
     this.date = new Date();
     if (this.isMultiple) {
       //多选
       const oneDayTime = 24 * 60 * 60 * 1000;
-      console.log(
-        "我的默认时间@@@@",
-        this.defaultStartDate,
-        this.defaultEndDate
-      );
       let onlyDate = new Date();
       onlyDate.setDate(onlyDate.getDate() + 1);
       this.multipleDate.startDate = this.defaultStartDate
@@ -179,20 +169,24 @@ export default {
         ? new Date(this.defaultStartDate)
         : "";
     }
-
     this.$nextTick(() => {
       this._calcDate();
-      // setTimeout(() => {
-      //   //生成前一年到10年前的时间，拼接到之前的list上
-      //   const year = this.date.getFullYear() - 10;
-      //   const nowYear = this.date.getFullYear();
-      //   const list = this._calc(year, 12, nowYear);
-      //   this.calList = list.concat(this.calList);
-      //   this.goToRightPosition();
-      // }, 1000);
     });
   },
   methods: {
+    createTime() {
+      //创建一个时间
+      const nowY = new Date().getFullYear() + 1;
+      const startY = nowY - 70;
+      let yearList = [];
+      for (let i = startY; i < nowY; i++) {
+        const obj = {};
+        obj.isExit = false;
+        obj.year = i;
+        yearList.push(obj);
+      }
+      this.yearList = yearList;
+    },
     goToRightPosition() {
       this.$nextTick(() => {
         if (document.querySelector(".order")) {
@@ -202,8 +196,8 @@ export default {
           }, 0);
         } else {
           setTimeout(() => {
-            const height = document.querySelector(".past").offsetTop;
-            document.querySelector(".cm-main").scrollTop = height - 95;
+            // const height = document.querySelector(".past").offsetTop;
+            document.querySelector(".cm-main").scrollTop = 0;
           }, 0);
         }
       });
@@ -211,14 +205,13 @@ export default {
     onConfirm() {
       //若是双选，判断是否选了结束时间
 
-      if (this.isMultiple && !this.endDate) {
-        Toast({
-          message: "请选择结束时间",
-          duration: 1000
-        });
-        return;
-      }
-      console.log("我选择😯的时间", this.chooseTime);
+      // if (this.isMultiple && !this.endDate) {
+      //   Toast({
+      //     message: "请选择结束时间",
+      //     duration: 1000
+      //   });
+      //   return;
+      // }
       // this.$emit("confirm", this.chooseTime);
 
       this.hideDate();
@@ -392,8 +385,12 @@ export default {
       });
     },
     hideDate() {
+      console.log(
+        "关闭啦～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～"
+      );
       this.show = false;
       this.zIndex = -1;
+
       this.$emit("close");
     },
     bindScroll() {
@@ -430,7 +427,6 @@ export default {
             const xindex = this.yearList.findIndex(
               oitem => curYear == oitem.year
             );
-            console.log("当前年~~~~~~", curYear, xindex);
             if (xindex != -1 && !this.yearList[xindex].isExit) {
               //还没有请求过
               const list = this._calc(curYear - 1, 12, curYear);
@@ -491,18 +487,23 @@ export default {
       // const nowYear = new Date().getFullYear() + 1;
       let list = [];
       for (let k = y; k < nowYear; k++) {
-        for (let i = 1; i < 13; i++) {
+        console.log("年份", k, new Date().getFullYear());
+        if (k === new Date().getFullYear()) {
+          month = new Date().getMonth() + 1;
+          console.log("🈷️🈷️🈷️🈷️", month);
+        }
+        for (let i = 1; i < month + 1; i++) {
           // if (i > 12) {
           //   month = i - 12;
           //   year = y + 1;
           // } else {
           //   month = i;
           // }
-          month = i;
-          let firstDay = new Date(`${year}/${month}/1`);
+          const curM = i;
+          let firstDay = new Date(`${year}/${curM}/1`);
           let week = firstDay.getDay();
           let obj = {
-            month: `${k}/${month}`,
+            month: `${k}/${curM}`,
             days: []
           };
           for (let times = 0; times < week; times++) {
@@ -522,7 +523,6 @@ export default {
           }
 
           list.push(obj);
-          console.log("我的数据~~~~~~~~~~~~~", list);
           // this.calList.push(obj);
           //定位默认选中日期所在的位置
 
@@ -579,7 +579,6 @@ export default {
       return days;
     },
     _getHoliday() {
-      console.log("源码527", this.date);
       this.calList.forEach(el => {
         el.days.forEach(e => {
           if (!this.isFuture) {
