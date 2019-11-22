@@ -137,7 +137,7 @@ export default {
   updated() {},
   created() {
     //创建一个时间
-    const nowY = new Date().getFullYear();
+    const nowY = new Date().getFullYear() + 1;
     const startY = nowY - 10;
     let yearList = [];
     for (let i = startY; i < nowY; i++) {
@@ -427,7 +427,6 @@ export default {
             //滑动到二月的时候自动计算前一年的日历数据，并且进行拼接
             const curMonth = parseInt(el.textContent.slice(-3, -1));
             const curYear = parseInt(el.textContent.slice(0, 4));
-
             const xindex = this.yearList.findIndex(
               oitem => curYear == oitem.year
             );
@@ -435,7 +434,7 @@ export default {
             if (xindex != -1 && !this.yearList[xindex].isExit) {
               //还没有请求过
               const list = this._calc(curYear - 1, 12, curYear);
-              this.calList = list.concat(this.calList);
+              this.calList = this.calList.concat(list);
               this.yearList[xindex].isExit = true;
             }
           } else if (
@@ -481,7 +480,7 @@ export default {
       this.calList.length = 0;
       const nowYear = this.date.getFullYear() + 1;
 
-      this.calList = this._calc(currentYear - 1, currentMonth, nowYear);
+      this.calList = this._calc(currentYear, currentMonth, nowYear);
       this._getHoliday();
     },
     _calc(y, m = 12, nowYear) {
@@ -523,6 +522,7 @@ export default {
           }
 
           list.push(obj);
+          console.log("我的数据~~~~~~~~~~~~~", list);
           // this.calList.push(obj);
           //定位默认选中日期所在的位置
 
@@ -536,7 +536,7 @@ export default {
           // })
         }
       }
-      return list;
+      return list.reverse();
     },
     // 获取每月的总天数
     _getDaysCount(year, month) {
