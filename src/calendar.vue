@@ -19,9 +19,9 @@
               <div class="cm-days-item">五</div>
               <div class="cm-days-item holiday">六</div>
             </div>
-            <div class="cm-fix">
+            <!-- <div class="cm-fix">
               {{fixMonth}}
-            </div>
+            </div> -->
             <div class="cm-main">
               <div class="cm-month" v-for="(month, index) in calList" :key="index">
                 <div class="cmm-header" v-text="getDateFormat(month.month)"></div>
