@@ -728,7 +728,6 @@ export default {
       line-height: 35px;
       font-size: 14px;
       position: relative;
-      z-index: 10000;
       background-color: #fff;
 
       .close-icon {
@@ -747,7 +746,6 @@ export default {
     .cm-days {
       height: 30px;
       flex(row, center, space-around);
-      z-index: 10000;
       position: relative;
       background-color: #fff;
 
