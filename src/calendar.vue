@@ -196,8 +196,8 @@ export default {
           }, 0);
         } else {
           setTimeout(() => {
-            // const height = document.querySelector(".past").offsetTop;
-            document.querySelector(".cm-main").scrollTop = 0;
+            const height = document.querySelector(".past").offsetTop;
+            document.querySelector(".cm-main").scrollTop = height;
           }, 0);
         }
       });
@@ -394,6 +394,7 @@ export default {
       this.$emit("close");
     },
     bindScroll() {
+      return;
       document
         .getElementsByClassName("cm-main")[0]
         .addEventListener("scroll", this._handleScroll);
@@ -422,17 +423,17 @@ export default {
             )[0].style.transform = `translateY(0px)`;
             this.fixMonth = el.textContent;
             //滑动到二月的时候自动计算前一年的日历数据，并且进行拼接
-            const curMonth = parseInt(el.textContent.slice(-3, -1));
-            const curYear = parseInt(el.textContent.slice(0, 4));
-            const xindex = this.yearList.findIndex(
-              oitem => curYear == oitem.year
-            );
-            if (xindex != -1 && !this.yearList[xindex].isExit) {
-              //还没有请求过
-              const list = this._calc(curYear - 1, 12, curYear);
-              this.calList = this.calList.concat(list);
-              this.yearList[xindex].isExit = true;
-            }
+            // const curMonth = parseInt(el.textContent.slice(-3, -1));
+            // const curYear = parseInt(el.textContent.slice(0, 4));
+            // const xindex = this.yearList.findIndex(
+            //   oitem => curYear == oitem.year
+            // );
+            // if (xindex != -1 && !this.yearList[xindex].isExit) {
+            //   //还没有请求过
+            //   const list = this._calc(curYear - 1, 12, curYear);
+            //   this.calList = this.calList.concat(list);
+            //   this.yearList[xindex].isExit = true;
+            // }
           } else if (
             el.offsetTop - scrollTop > baseHeight &&
             el.offsetTop - scrollTop < animateHeight
@@ -476,7 +477,7 @@ export default {
       this.calList.length = 0;
       const nowYear = this.date.getFullYear() + 1;
 
-      this.calList = this._calc(currentYear, currentMonth, nowYear);
+      this.calList = this._calc(currentYear - 1, currentMonth, nowYear);
       this._getHoliday();
     },
     _calc(y, m = 12, nowYear) {
@@ -486,13 +487,16 @@ export default {
       let month = m;
       // const nowYear = new Date().getFullYear() + 1;
       let list = [];
+      const nowYearMonth = new Date().getMonth() + 1;
+
       for (let k = y; k < nowYear; k++) {
         console.log("年份", k, new Date().getFullYear());
         if (k === new Date().getFullYear()) {
           month = new Date().getMonth() + 1;
           console.log("🈷️🈷️🈷️🈷️", month);
         }
-        for (let i = 1; i < month + 1; i++) {
+        const startM = k === y ? nowYearMonth : 1;
+        for (let i = startM; i < month + 1; i++) {
           // if (i > 12) {
           //   month = i - 12;
           //   year = y + 1;
@@ -536,7 +540,7 @@ export default {
           // })
         }
       }
-      return list.reverse();
+      return list;
     },
     // 获取每月的总天数
     _getDaysCount(year, month) {
