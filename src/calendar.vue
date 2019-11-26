@@ -2,9 +2,8 @@
   <div class="calendar">
     <div class="cal-container" :style="wrapperStyle">
       <transition name="fade">
-  <!-- <van-popup v-model="show"  position="bottom" > -->
         <div class="cal-wrapper"  v-if='show' :style="wrapperStyle">
-          <div class="cal-mask" @click="hideDate"></div>
+          <!-- <div class="cal-mask" @click="hideDate"></div> -->
           <div class="cal-main" :style="mainStyle">
             <div class="cm-header">
               选择日期
@@ -114,12 +113,10 @@ export default {
     },
     show(val) {
       //一天的毫秒数
+
+      console.log("我的显示状态", val);
       if (val) {
         this.createTime();
-        // this.calList = [];
-        // this.$nextTick(() => {
-        //   this._calcDate();
-        // });
         this.goToRightPosition();
       }
     }
@@ -138,7 +135,7 @@ export default {
       return `height: ${this.screenHeight}px; z-index: ${this.zIndex}`;
     },
     mainStyle() {
-      return `height: 90%`;
+      // return `height: 100%`;
     }
   },
   updated() {},
@@ -190,9 +187,11 @@ export default {
     goToRightPosition() {
       this.$nextTick(() => {
         if (document.querySelector(".order")) {
+          console.log("外层定位");
           setTimeout(() => {
-            const height = document.querySelector(".order").offsetTop;
-            document.querySelector(".cm-main").scrollTop = height - 95;
+            const height = document.querySelector(".order").offsetTop - 195;
+            document.querySelector(".cm-main").scrollTop = height;
+            console.log("内层定位", height);
           }, 0);
         } else {
           setTimeout(() => {
@@ -354,6 +353,7 @@ export default {
     },
     editDate() {
       this.show = true;
+      this.$emit("toHandleDate", true);
       this.zIndex = 10000;
 
       this.$nextTick(() => {
@@ -389,6 +389,7 @@ export default {
         "关闭啦～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～"
       );
       this.show = false;
+      this.$emit("toHandleDate", false);
       this.zIndex = -1;
 
       this.$emit("close");
@@ -478,6 +479,7 @@ export default {
       const nowYear = this.date.getFullYear() + 1;
 
       this.calList = this._calc(currentYear - 1, currentMonth, nowYear);
+      this.goToRightPosition();
       this._getHoliday();
     },
     _calc(y, m = 12, nowYear) {
@@ -720,7 +722,11 @@ export default {
     background-color: #fff;
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
-    position: relative;
+    position: fixed;
+    bottom: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 100;
 
     .cm-header {
       text-align: center;
