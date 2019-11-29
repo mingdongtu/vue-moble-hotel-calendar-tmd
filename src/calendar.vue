@@ -2,8 +2,9 @@
   <div class="calendar">
     <div class="cal-container" :style="wrapperStyle">
       <transition name="fade">
+  <!-- <van-popup v-model="show"  position="bottom" > -->
         <div class="cal-wrapper"  v-if='show' :style="wrapperStyle">
-          <!-- <div class="cal-mask" @click="hideDate"></div> -->
+          <div class="cal-mask" @click="hideDate"></div>
           <div class="cal-main" :style="mainStyle">
             <div class="cm-header">
               选择日期
@@ -21,7 +22,7 @@
             <!-- <div class="cm-fix">
               {{fixMonth}}
             </div> -->
-            <div class="cm-main">
+            <div class="cm-main " >
               <div class="cm-month" v-for="(month, index) in calList" :key="index">
                 <div class="cmm-header" v-text="getDateFormat(month.month)"></div>
                 <div class="cmm-main">
@@ -44,9 +45,8 @@
 import { dateFtt } from "./date";
 import utils from "./utils.js";
 import { Toast, Popup } from "vant";
-
 import Vue from "vue";
-Vue.use(Toast);
+
 export default {
   components: {
     [Popup.name]: Popup
@@ -114,8 +114,15 @@ export default {
     show(val) {
       //一天的毫秒数
 
-      console.log("我的显示状态", val);
       if (val) {
+        if (this.isMultiple && !this.defaultEndDate && !this.defaultEndDate) {
+          console.log("我的显示状态", this.defaultEndDate, this.defaultEndDate);
+          this.startDate = this.defaultStartDate;
+          this.endDate = this.defaultEndDate;
+          this.chooseTime.startDate = this.defaultStartDate;
+          this.chooseTime.endDate = this.defaultEndDate;
+          this._clearStatus();
+        }
         this.createTime();
         this.goToRightPosition();
       }
@@ -135,14 +142,18 @@ export default {
       return `height: ${this.screenHeight}px; z-index: ${this.zIndex}`;
     },
     mainStyle() {
-      // return `height: 100%`;
+      return `height: 90%`;
     }
   },
   updated() {},
-  created() {},
+  created() {
+    const height = document.body.clientHeight;
+    const width = document.body.clientWidth;
+    console.log("设备高度和宽度~~~~", height, width);
+  },
   mounted() {
     this.editDate();
-    //一天的毫秒数
+    //一天的毫秒数 month
     console.log("贡献者:tumingdong @1.1.3");
     this.screenHeight = window.screen.height;
     this.date = new Date();
@@ -150,6 +161,12 @@ export default {
       //多选
       const oneDayTime = 24 * 60 * 60 * 1000;
       let onlyDate = new Date();
+
+      console.log(
+        "时间～～～～～～～～～～～～～～～",
+        this.defaultStartDate,
+        this.defaultEndDate
+      );
       onlyDate.setDate(onlyDate.getDate() + 1);
       this.multipleDate.startDate = this.defaultStartDate
         ? this.defaultStartDate
@@ -160,7 +177,7 @@ export default {
       this.defaultStartDate &&
         (this.startDate = new Date(this.defaultStartDate));
       this.defaultEndDate && (this.endDate = new Date(this.defaultEndDate));
-      // this._setStatus(month, day, this.startText)
+      // this._setStatus(month, day, this.startText);
     } else {
       this.startDate = this.defaultStartDate
         ? new Date(this.defaultStartDate)
@@ -189,9 +206,9 @@ export default {
         if (document.querySelector(".order")) {
           console.log("外层定位");
           setTimeout(() => {
-            const height = document.querySelector(".order").offsetTop - 195;
-            document.querySelector(".cm-main").scrollTop = height;
-            console.log("内层定位", height);
+            console.log("内层定位");
+            const height = document.querySelector(".order").offsetTop;
+            document.querySelector(".cm-main").scrollTop = height - 195;
           }, 0);
         } else {
           setTimeout(() => {
@@ -224,6 +241,7 @@ export default {
       this.dayGap = 0;
       if (!this.isMultiple) {
         //只允许单选的情况
+        console.log("单选开始", this.startDate);
         if (!this.startDate) {
           //如果不存在开始时间
           this.startDate = new Date(`${month.month}/${day.num}`);
@@ -265,7 +283,7 @@ export default {
 
         return;
       }
-
+      console.log("多选～～～～～～～～～～～～·");
       if (!this.startDate) {
         //如果不存在开始时间
 
@@ -628,6 +646,7 @@ export default {
       //   month = { month: month };
       //   day = { num: parseInt(day) };
       // }
+      console.log("🐍设置状态🐍", status);
       this.calList.forEach(el => {
         el.days.forEach(e => {
           e.contain = "";
@@ -657,6 +676,7 @@ export default {
       this.calList.forEach(el => {
         el.days.forEach(e => {
           e.status = "";
+          e.contain = "";
         });
       });
     }
@@ -722,11 +742,7 @@ export default {
     background-color: #fff;
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
-    position: fixed;
-    bottom: 0;
-    height: 100vh;
-    width: 100vw;
-    z-index: 100;
+    position: relative;
 
     .cm-header {
       text-align: center;
@@ -860,5 +876,29 @@ export default {
 
 .slide-enter, .slide-leave-to {
   transform: translate3d(0, 100%, 0);
+}
+
+@media only screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+  .cm-month:last-child {
+    padding-bottom: 100px;
+  }
+}
+
+@media only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
+  .cm-month:last-child {
+    padding-bottom: 100px;
+  }
+}
+
+@media only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
+  .cm-month:last-child {
+    padding-bottom: 100px;
+  }
+}
+
+@media only screen and (device-width: 414px) and (device-height: 919px) and (-webkit-device-pixel-ratio: 3) {
+  .cm-month:last-child {
+    padding-bottom: 100px;
+  }
 }
 </style>
