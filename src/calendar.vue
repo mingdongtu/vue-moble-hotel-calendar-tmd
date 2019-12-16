@@ -11,13 +11,13 @@
               <div class="close-icon"><span class="iconfont iconfont_1" @click.stop='onConfirm'>取消</span></div>
             </div>
             <div class="cm-days">
-              <div class="cm-days-item holiday">日</div>
               <div class="cm-days-item">一</div>
               <div class="cm-days-item">二</div>
               <div class="cm-days-item">三</div>
               <div class="cm-days-item">四</div>
               <div class="cm-days-item">五</div>
               <div class="cm-days-item holiday">六</div>
+              <div class="cm-days-item holiday">日</div>
             </div>
             <!-- <div class="cm-fix">
               {{fixMonth}}
@@ -204,7 +204,6 @@ export default {
     goToRightPosition() {
       this.$nextTick(() => {
         if (document.querySelector(".order")) {
-          console.log("外层定位");
           setTimeout(() => {
             console.log("内层定位");
             const height = document.querySelector(".order").offsetTop;
@@ -212,24 +211,17 @@ export default {
           }, 0);
         } else {
           setTimeout(() => {
-            const height = document.querySelector(".past").offsetTop;
+            const index = this.isFuture
+              ? 0
+              : document.getElementsByClassName("cm-month").length - 1;
+            const height = document.getElementsByClassName("cm-month")[index]
+              .offsetTop;
             document.querySelector(".cm-main").scrollTop = height;
           }, 0);
         }
       });
     },
     onConfirm() {
-      //若是双选，判断是否选了结束时间
-
-      // if (this.isMultiple && !this.endDate) {
-      //   Toast({
-      //     message: "请选择结束时间",
-      //     duration: 1000
-      //   });
-      //   return;
-      // }
-      // this.$emit("confirm", this.chooseTime);
-
       this.hideDate();
     },
     // 选择日期
@@ -494,9 +486,10 @@ export default {
         new Date(`${currentYear}/${currentMonth}/1`)
       );
       this.calList.length = 0;
-      const nowYear = this.date.getFullYear() + 1;
-
-      this.calList = this._calc(currentYear - 1, currentMonth, nowYear);
+      let nowYear = this.date.getFullYear() + 1;
+      currentYear = this.isFuture ? currentYear : currentYear - 1;
+      nowYear = this.isFuture ? nowYear + 1 : nowYear;
+      this.calList = this._calc(currentYear, currentMonth, nowYear);
       this.goToRightPosition();
       this._getHoliday();
     },
@@ -876,6 +869,10 @@ export default {
 
 .slide-enter, .slide-leave-to {
   transform: translate3d(0, 100%, 0);
+}
+
+.cm-month:last-child {
+  padding-bottom: 100px;
 }
 
 @media only screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
