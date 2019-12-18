@@ -74,9 +74,9 @@ export default {
   },
   props: {
     isFuture: {
-      //是否选中未来时间
-      type: Boolean,
-      default: false
+      //过去 所有 未来：-1 0  1
+      type: Number,
+      default: -1
     },
     total: {
       type: Boolean,
@@ -170,7 +170,6 @@ export default {
       this.defaultStartDate &&
         (this.startDate = new Date(this.defaultStartDate));
       this.defaultEndDate && (this.endDate = new Date(this.defaultEndDate));
-      // this._setStatus(month, day, this.startText);
     } else {
       this.startDate = this.defaultStartDate
         ? new Date(this.defaultStartDate)
@@ -204,12 +203,17 @@ export default {
           }, 0);
         } else {
           setTimeout(() => {
-            const index = this.isFuture
-              ? 0
-              : document.getElementsByClassName("cm-month").length - 1;
+            let index;
+            if (this.isFuture === 0) {
+              //不限制时间
+              index = 11; //暂定
+            } else {
+              index = document.getElementsByClassName("cm-month").length - 1;
+            }
+            console.log("我即将要定位的下标", index);
             const height = document.getElementsByClassName("cm-month")[index]
               .offsetTop;
-            document.querySelector(".cm-main").scrollTop = height;
+            document.querySelector(".cm-main").scrollTop = height + 50;
           }, 0);
         }
       });
@@ -470,8 +474,9 @@ export default {
       );
       this.calList.length = 0;
       let nowYear = this.date.getFullYear() + 1;
-      currentYear = this.isFuture ? currentYear - 1 : currentYear - 1;
-      nowYear = this.isFuture ? nowYear + 1 : nowYear;
+
+      currentYear = this.isFuture === 1 ? currentYear : currentYear - 1;
+      nowYear = this.isFuture === -1 ? nowYear : nowYear + 1;
       this.calList = this._calc(currentYear, currentMonth, nowYear);
       this.goToRightPosition();
       this._getHoliday();
@@ -580,7 +585,8 @@ export default {
     _getHoliday() {
       this.calList.forEach(el => {
         el.days.forEach(e => {
-          if (!this.isFuture) {
+          if (this.isFuture === -1) {
+            //过去
             if (
               new Date(`${el.month}/${e.num}`).getTime() >
               new Date(
@@ -590,7 +596,7 @@ export default {
             ) {
               e.type = "past";
             }
-          } else {
+          } else if (this.isFuture === 1) {
             if (
               new Date(`${el.month}/${e.num}`).getTime() <
               new Date(
