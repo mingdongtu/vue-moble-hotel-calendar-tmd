@@ -149,7 +149,6 @@ export default {
   created() {
     const height = document.body.clientHeight;
     const width = document.body.clientWidth;
-    console.log("设备高度和宽度~~~~", height, width);
   },
   mounted() {
     this.editDate();
@@ -161,12 +160,6 @@ export default {
       //多选
       const oneDayTime = 24 * 60 * 60 * 1000;
       let onlyDate = new Date();
-
-      console.log(
-        "时间～～～～～～～～～～～～～～～",
-        this.defaultStartDate,
-        this.defaultEndDate
-      );
       onlyDate.setDate(onlyDate.getDate() + 1);
       this.multipleDate.startDate = this.defaultStartDate
         ? this.defaultStartDate
@@ -248,11 +241,6 @@ export default {
             this.startDate.getTime() ||
           this.startDate
         ) {
-          console.log(
-            "第二种情况",
-            `${month.month}/${day.num}`,
-            this.startDate
-          );
           this.startDate = new Date(`${month.month}/${day.num}`);
           this.endDate = null;
           this.chooseTime = `${month.month}/${day.num}`.replace(/\//g, "-");
@@ -275,7 +263,6 @@ export default {
 
         return;
       }
-      console.log("多选～～～～～～～～～～～～·");
       if (!this.startDate) {
         //如果不存在开始时间
 
@@ -395,9 +382,6 @@ export default {
       });
     },
     hideDate() {
-      console.log(
-        "关闭啦～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～～"
-      );
       this.show = false;
       this.$emit("toHandleDate", false);
       this.zIndex = -1;
@@ -470,7 +454,6 @@ export default {
     },
     _calcDate(cYear) {
       // 获取当前年份
-      console.log("421获取当年年份", this.date);
       let currentYear = cYear || this.date.getFullYear();
       let currentMonth;
 
@@ -487,13 +470,14 @@ export default {
       );
       this.calList.length = 0;
       let nowYear = this.date.getFullYear() + 1;
-      currentYear = this.isFuture ? currentYear : currentYear - 1;
+      currentYear = this.isFuture ? currentYear - 1 : currentYear - 1;
       nowYear = this.isFuture ? nowYear + 1 : nowYear;
       this.calList = this._calc(currentYear, currentMonth, nowYear);
       this.goToRightPosition();
       this._getHoliday();
     },
     _calc(y, m = 12, nowYear) {
+      console.log("计算时间开始-结束", y, nowYear);
       //创建日历数据
       let max = m + 4;
       let year = y;
@@ -503,10 +487,8 @@ export default {
       const nowYearMonth = new Date().getMonth() + 1;
 
       for (let k = y; k < nowYear; k++) {
-        console.log("年份", k, new Date().getFullYear());
         if (k === new Date().getFullYear()) {
           month = new Date().getMonth() + 1;
-          console.log("🈷️🈷️🈷️🈷️", month);
         }
         const startM = k === y ? nowYearMonth : 1;
         for (let i = startM; i < month + 1; i++) {
@@ -639,7 +621,6 @@ export default {
       //   month = { month: month };
       //   day = { num: parseInt(day) };
       // }
-      console.log("🐍设置状态🐍", status);
       this.calList.forEach(el => {
         el.days.forEach(e => {
           e.contain = "";
